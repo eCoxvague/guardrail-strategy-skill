@@ -1,0 +1,561 @@
+.app-shell {
+  width: min(1480px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 40px;
+}
+
+.topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+}
+
+.eyebrow {
+  margin: 0 0 7px;
+  color: #8a6a00;
+  font-size: 13px;
+  font-weight: 760;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.topbar h1 {
+  margin: 0;
+  color: #111827;
+  font-size: clamp(30px, 5vw, 52px);
+  line-height: 1.03;
+  letter-spacing: 0;
+}
+
+.status-pill,
+.segmented,
+.decision-row,
+.panel-title,
+.legend {
+  display: flex;
+  align-items: center;
+}
+
+.status-pill {
+  flex: 0 0 auto;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid #d7c261;
+  border-radius: 8px;
+  color: #3d3200;
+  background: #fff7cf;
+  font-weight: 720;
+}
+
+.control-strip {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.segmented {
+  gap: 6px;
+  min-width: 0;
+  padding: 5px;
+  border: 1px solid #dde2ea;
+  border-radius: 8px;
+  background: #f7f9fb;
+}
+
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 6px;
+  color: #435064;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 740;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #e8edf4;
+}
+
+button:focus-visible {
+  outline: 2px solid #f0b90b;
+  outline-offset: 2px;
+}
+
+button.active {
+  color: #101820;
+  background: #f0b90b;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.16);
+}
+
+.agent-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.agent-copy,
+.risk-box,
+.metric,
+.panel,
+.chart-shell {
+  border: 1px solid #dde2ea;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+}
+
+.agent-copy {
+  padding: 22px;
+}
+
+.agent-copy p,
+.risk-box p {
+  max-width: 920px;
+  margin: 10px 0 0;
+  color: #4b5563;
+}
+
+.agent-copy strong {
+  color: #101820;
+}
+
+.panel-title {
+  gap: 8px;
+  color: #111827;
+}
+
+.panel-title h2 {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.decision-row {
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.decision-row span,
+.status-pill,
+.mini-action,
+.legend span {
+  white-space: nowrap;
+}
+
+.decision-row span:not(.action-badge),
+.legend span {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid #dde2ea;
+  border-radius: 6px;
+  color: #435064;
+  background: #f8fafc;
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.action-badge {
+  min-height: 30px;
+  padding: 0 11px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 820;
+}
+
+.action-badge.buy,
+.mini-action.buy {
+  color: #065f46;
+  background: #d1fae5;
+}
+
+.action-badge.sell,
+.mini-action.sell {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.action-badge.hold,
+.mini-action.hold {
+  color: #334155;
+  background: #e2e8f0;
+}
+
+.risk-box {
+  padding: 20px;
+  border-color: #c8d7e8;
+  background: #f5f9ff;
+}
+
+.risk-box span {
+  display: block;
+  color: #526174;
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.risk-box strong {
+  display: block;
+  margin-top: 5px;
+  color: #0f172a;
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.metric {
+  min-height: 104px;
+  padding: 16px;
+}
+
+.metric span,
+.chart-head span {
+  color: #667085;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.metric strong {
+  display: block;
+  margin-top: 8px;
+  color: #111827;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.metric small {
+  display: block;
+  margin-top: 10px;
+  color: #667085;
+  font-size: 13px;
+}
+
+.metric-good strong,
+.positive {
+  color: #047857;
+}
+
+.metric-warn strong {
+  color: #a16207;
+}
+
+.metric-bad strong,
+.negative {
+  color: #dc2626;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(340px, 0.8fr);
+  gap: 16px;
+}
+
+.left-column,
+.right-column {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.chart-shell {
+  padding: 18px;
+  overflow: hidden;
+}
+
+.chart-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.chart-head strong {
+  display: block;
+  margin-top: 4px;
+  color: #111827;
+  font-size: 19px;
+}
+
+.legend {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.legend-equity {
+  border-color: #34d399 !important;
+}
+
+.legend-price {
+  border-color: #60a5fa !important;
+}
+
+.legend-buy {
+  border-color: #f0b90b !important;
+}
+
+.equity-chart {
+  display: block;
+  width: 100%;
+  height: 320px;
+}
+
+.grid-line {
+  stroke: #e5e7eb;
+  stroke-width: 1;
+}
+
+.price-path {
+  fill: none;
+  stroke: #60a5fa;
+  stroke-dasharray: 7 8;
+  stroke-width: 2.2;
+  opacity: 0.75;
+}
+
+.equity-path {
+  fill: none;
+  stroke: #10b981;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+}
+
+.signal-dot {
+  stroke: #ffffff;
+  stroke-width: 2.5;
+}
+
+.signal-dot.buy {
+  fill: #f0b90b;
+}
+
+.signal-dot.sell {
+  fill: #ef4444;
+}
+
+.panel {
+  padding: 18px;
+}
+
+.table-wrap {
+  width: 100%;
+  margin-top: 14px;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+  text-align: left;
+}
+
+th,
+td {
+  padding: 11px 10px;
+  border-bottom: 1px solid #eef2f7;
+  font-size: 13px;
+}
+
+th {
+  color: #667085;
+  font-weight: 780;
+}
+
+td {
+  color: #263244;
+}
+
+.thesis-list {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.thesis-list li {
+  padding-left: 14px;
+  border-left: 3px solid #f0b90b;
+  color: #465364;
+  font-size: 14px;
+}
+
+.benchmark-panel {
+  background: #fffdf4;
+  border-color: #ead276;
+}
+
+.benchmark-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.benchmark-grid article {
+  min-height: 92px;
+  padding: 13px;
+  border: 1px solid #eadf9c;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.benchmark-grid span {
+  display: block;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 780;
+}
+
+.benchmark-grid strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.benchmark-grid small {
+  display: block;
+  margin-top: 9px;
+  color: #667085;
+  font-size: 12px;
+}
+
+.decision-log {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.decision-log article {
+  padding: 12px;
+  border: 1px solid #e5eaf1;
+  border-radius: 8px;
+  background: #fbfcfe;
+}
+
+.decision-log article > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.decision-log strong {
+  color: #111827;
+  font-size: 13px;
+}
+
+.decision-log p {
+  margin: 8px 0 0;
+  color: #526174;
+  font-size: 13px;
+}
+
+.mini-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.callout {
+  background: #101820;
+  border-color: #101820;
+}
+
+.callout .panel-title {
+  color: #f8fafc;
+}
+
+.callout code {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 14px;
+  padding: 14px;
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: #d1fae5;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre;
+}
+
+@media (max-width: 1120px) {
+  .metrics-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .agent-summary,
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    width: min(100% - 20px, 1480px);
+    padding-top: 16px;
+  }
+
+  .topbar,
+  .control-strip,
+  .chart-head {
+    flex-direction: column;
+  }
+
+  .status-pill {
+    align-self: flex-start;
+  }
+
+  .segmented {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .segmented button {
+    flex: 1 0 auto;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .benchmark-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .equity-chart {
+    height: 240px;
+  }
+}
