@@ -1,5 +1,5 @@
-import type { Candle, SymbolId } from './types'
-import { cmcMarketCache } from './cmcCache'
+import type { Candle, MarketDataSource, SymbolId } from './types'
+import { cmcMarketCache, cmcMarketCacheMeta } from './cmcCache'
 
 const profiles: Record<SymbolId, { start: number; drift: number; volatility: number; volume: number; cap: number }> = {
   BNB: { start: 610, drift: 0.0018, volatility: 0.024, volume: 1250000000, cap: 93000000000 },
@@ -53,4 +53,20 @@ export function getMarketData(symbol: SymbolId): Candle[] {
   }
 
   return candles
+}
+
+export function getMarketDataSource(symbol: SymbolId): MarketDataSource {
+  const cached = cmcMarketCache[symbol]
+  const meta = cmcMarketCacheMeta[symbol]
+
+  if (cached && cached.length >= 40 && meta) {
+    return meta
+  }
+
+  return {
+    provider: 'Demo',
+    mode: 'deterministic-sample',
+    candles: getMarketData(symbol).length,
+    note: 'Deterministic sample data is active because no CoinMarketCap cache is available for this symbol.',
+  }
 }

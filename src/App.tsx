@@ -2,6 +2,7 @@ import {
   Activity,
   Brain,
   CircleDollarSign,
+  Database,
   Gauge,
   LineChart,
   RefreshCw,
@@ -13,7 +14,7 @@ import { useMemo, useState } from 'react'
 import './App.css'
 import { riskConfigs } from './domain/agent'
 import { runBacktest } from './domain/backtest'
-import { getMarketData } from './domain/marketData'
+import { getMarketData, getMarketDataSource } from './domain/marketData'
 import type { EquityPoint, RiskMode, SymbolId, Trade } from './domain/types'
 
 const symbols: SymbolId[] = ['BNB', 'CAKE', 'TWT']
@@ -150,6 +151,54 @@ function TradesTable({ trades }: { trades: Trade[] }) {
   )
 }
 
+function DataSourcePanel({
+  provider,
+  mode,
+  fetchedAt,
+  candles,
+  note,
+}: {
+  provider: string
+  mode: string
+  fetchedAt?: string
+  candles: number
+  note: string
+}) {
+  const modeLabel = mode
+    .split('-')
+    .map((part) => part[0].toUpperCase() + part.slice(1))
+    .join(' ')
+
+  return (
+    <section className="data-source-panel">
+      <div className="panel-title">
+        <Database size={18} />
+        <h2>CoinMarketCap data source</h2>
+      </div>
+      <div className="source-grid">
+        <article>
+          <span>Provider</span>
+          <strong>{provider}</strong>
+        </article>
+        <article>
+          <span>Mode</span>
+          <strong>{modeLabel}</strong>
+        </article>
+        <article>
+          <span>Candles</span>
+          <strong>{candles}</strong>
+        </article>
+        <article>
+          <span>Fetched</span>
+          <strong>{fetchedAt ? new Date(fetchedAt).toLocaleDateString('en-US') : 'Local demo'}</strong>
+        </article>
+      </div>
+      <p>{note}</p>
+      <small>API key is used only by the local cache script and is never shipped to the browser.</small>
+    </section>
+  )
+}
+
 function BenchmarkPanel({
   guardReturn,
   guardDrawdown,
@@ -202,6 +251,7 @@ function App() {
   const [symbol, setSymbol] = useState<SymbolId>('BNB')
   const [riskMode, setRiskMode] = useState<RiskMode>('balanced')
   const candles = useMemo(() => getMarketData(symbol), [symbol])
+  const dataSource = useMemo(() => getMarketDataSource(symbol), [symbol])
   const result = useMemo(() => runBacktest(symbol, candles, riskMode), [symbol, candles, riskMode])
   const latestDecision = result.decisions[result.decisions.length - 1]
   const latestEquity = result.equityCurve[result.equityCurve.length - 1]?.equity ?? 10000
@@ -269,6 +319,14 @@ function App() {
           </p>
         </div>
       </section>
+
+      <DataSourcePanel
+        provider={dataSource.provider}
+        mode={dataSource.mode}
+        fetchedAt={dataSource.fetchedAt}
+        candles={dataSource.candles}
+        note={dataSource.note}
+      />
 
       <section className="metrics-grid">
         <MetricCard
@@ -350,6 +408,8 @@ function App() {
                   confidence: Number(result.currentSignal.confidence.toFixed(2)),
                   stopLossPct: result.currentSignal.stopLossPct,
                   takeProfitPct: result.currentSignal.takeProfitPct,
+                  dataProvider: dataSource.provider,
+                  dataMode: dataSource.mode,
                 },
                 null,
                 2,

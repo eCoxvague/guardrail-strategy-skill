@@ -109,7 +109,8 @@ button.active {
 .risk-box,
 .metric,
 .panel,
-.chart-shell {
+.chart-shell,
+.data-source-panel {
   border: 1px solid #dde2ea;
   border-radius: 8px;
   background: #ffffff;
@@ -215,6 +216,54 @@ button.active {
   color: #0f172a;
   font-size: 28px;
   line-height: 1.1;
+}
+
+.data-source-panel {
+  margin-bottom: 18px;
+  padding: 18px;
+  border-color: #b9ddc5;
+  background: #f2fbf5;
+}
+
+.source-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.source-grid article {
+  min-height: 72px;
+  padding: 12px;
+  border: 1px solid #ccebd5;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.source-grid span,
+.data-source-panel small {
+  color: #667085;
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.source-grid strong {
+  display: block;
+  margin-top: 7px;
+  color: #075e42;
+  font-size: 17px;
+  line-height: 1.15;
+}
+
+.data-source-panel p {
+  margin: 12px 0 0;
+  color: #315444;
+  font-size: 14px;
+}
+
+.data-source-panel small {
+  display: block;
+  margin-top: 8px;
 }
 
 .metrics-grid {
@@ -548,6 +597,10 @@ td {
   }
 
   .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .source-grid {
     grid-template-columns: 1fr;
   }
 

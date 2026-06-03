@@ -39,16 +39,18 @@ Reasons it stands out:
 - It can refuse trades through a risk governor.
 - It shows every decision in plain English.
 - It benchmarks against naive RSI so the improvement or failure is visible.
+- It exposes the active CoinMarketCap data source mode directly in the demo UI.
 - It produces structured CMC Skill-style JSON output that another agent can consume.
 
 ## What Judges Should Try
 
 1. Change symbol between BNB, CAKE, and TWT.
 2. Change risk mode between Defensive, Balanced, and Growth.
-3. Compare GuardRail versus the naive RSI baseline.
-4. Compare total return, max drawdown, risk overrides, and decision log.
-5. Inspect the JSON skill output in the right panel.
-6. Read `docs/STRATEGY_SKILL_SPEC.md` for the full strategy specification.
+3. Inspect the CoinMarketCap data source panel.
+4. Compare GuardRail versus the naive RSI baseline.
+5. Compare total return, max drawdown, risk overrides, and decision log.
+6. Inspect the JSON skill output in the right panel.
+7. Read `docs/STRATEGY_SKILL_SPEC.md` for the full strategy specification.
 
 ## Repository
 
@@ -65,10 +67,11 @@ Add demo video URL here after recording.
 Suggested 2-minute video flow:
 
 - 0:00-0:20: Explain Track 2 and GuardRail's risk-first idea.
-- 0:20-0:50: Show symbol and risk-mode switching.
-- 0:50-1:15: Show benchmark panel versus naive RSI.
-- 1:15-1:35: Show equity curve, drawdown, trade table, and decision log.
-- 1:35-1:50: Show JSON skill output and strategy spec.
+- 0:20-0:40: Show the CoinMarketCap data source panel.
+- 0:40-1:00: Show symbol and risk-mode switching.
+- 1:00-1:20: Show benchmark panel versus naive RSI.
+- 1:20-1:40: Show equity curve, drawdown, trade table, and decision log.
+- 1:40-1:50: Show JSON skill output and strategy spec.
 - 1:50-2:00: Explain CMC data cache and why this is useful.
 
 ## Setup

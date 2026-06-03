@@ -98,6 +98,14 @@ export type BenchmarkStats = {
   winRatePct: number
 }
 
+export type MarketDataSource = {
+  provider: 'CoinMarketCap' | 'Demo'
+  mode: 'historical-ohlcv' | 'latest-quote-calibrated' | 'deterministic-sample'
+  fetchedAt?: string
+  candles: number
+  note: string
+}
+
 export type BacktestResult = {
   symbol: SymbolId
   stats: BacktestStats

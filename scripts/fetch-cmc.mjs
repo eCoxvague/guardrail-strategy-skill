@@ -166,25 +166,50 @@ async function fetchSymbol(symbol) {
     if (String(message).toLowerCase().includes("doesn't support this endpoint")) {
       console.warn(`  Historical OHLCV not available for this CMC plan. Falling back to latest quote calibration.`)
       const quote = await fetchLatestQuote(symbol)
-      return buildAnchoredCandles(symbol, quote, days)
+      const candles = buildAnchoredCandles(symbol, quote, days)
+      return {
+        candles,
+        meta: {
+          provider: 'CoinMarketCap',
+          mode: 'latest-quote-calibrated',
+          fetchedAt: new Date().toISOString(),
+          candles: candles.length,
+          note: 'CMC historical OHLCV was unavailable on this API plan, so history is calibrated from live CMC price, volume, and market cap.',
+        },
+      }
     }
     throw new Error(`${symbol}: ${message}`)
   }
 
-  return extractQuotes(payload, symbol)
+  const candles = extractQuotes(payload, symbol)
+  return {
+    candles,
+    meta: {
+      provider: 'CoinMarketCap',
+      mode: 'historical-ohlcv',
+      fetchedAt: new Date().toISOString(),
+      candles: candles.length,
+      note: 'Historical OHLCV fetched from CoinMarketCap.',
+    },
+  }
 }
 
 const cache = {}
+const meta = {}
 
 for (const symbol of symbols) {
   console.log(`Fetching ${symbol} ${days}d OHLCV from CoinMarketCap...`)
-  cache[symbol] = await fetchSymbol(symbol)
+  const result = await fetchSymbol(symbol)
+  cache[symbol] = result.candles
+  meta[symbol] = result.meta
   console.log(`  ${cache[symbol].length} candles`)
 }
 
-const file = `import type { Candle, SymbolId } from './types'
+const file = `import type { Candle, MarketDataSource, SymbolId } from './types'
 
 export const cmcMarketCache: Partial<Record<SymbolId, Candle[]>> = ${JSON.stringify(cache, null, 2)}
+
+export const cmcMarketCacheMeta: Partial<Record<SymbolId, MarketDataSource>> = ${JSON.stringify(meta, null, 2)}
 `
 
 await mkdir(dirname(outputPath), { recursive: true })
