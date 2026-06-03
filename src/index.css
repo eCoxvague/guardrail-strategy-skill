@@ -1,8 +1,11 @@
 :root {
   font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    "Aptos", "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: #d7dee9;
-  background: #070b11;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(240, 185, 11, 0.11), transparent 28%),
+    radial-gradient(circle at 88% 12%, rgba(52, 211, 153, 0.09), transparent 26%),
+    linear-gradient(180deg, #070b11 0%, #0a0f17 52%, #06080d 100%);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -17,6 +20,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  background-attachment: fixed;
 }
 
 #root {

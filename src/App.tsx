@@ -2,9 +2,11 @@ import {
   Activity,
   BarChart3,
   Brain,
+  ChevronDown,
   CheckCircle2,
   CircleDollarSign,
   ClipboardCheck,
+  Cpu,
   Database,
   FileText,
   Gauge,
@@ -16,6 +18,7 @@ import {
   Swords,
   Terminal,
   TrendingUp,
+  Zap,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import './App.css'
@@ -60,6 +63,25 @@ function titleCaseMode(mode: string) {
     .split('-')
     .map((part) => part[0].toUpperCase() + part.slice(1))
     .join(' ')
+}
+
+function actionNarrative(result: BacktestResult) {
+  const latestDecision = result.decisions[result.decisions.length - 1]
+  const strategy = result.currentSignal.strategy
+
+  if (latestDecision.action === 'buy') {
+    return `Entry allowed: ${strategy} passed confidence, drawdown, and position-size checks.`
+  }
+
+  if (latestDecision.action === 'sell') {
+    return `Exit signal: ${strategy} detected a stretched move, so the skill protects the backtest portfolio instead of adding exposure.`
+  }
+
+  if (!latestDecision.approved) {
+    return `No trade: risk governor blocked the signal before it reached the strategy output.`
+  }
+
+  return `No trade: the current regime does not offer a clean enough edge after risk checks.`
 }
 
 function MetricCard({
@@ -258,6 +280,16 @@ function TerminalPanel({
 }) {
   const latestDecision = result.decisions[result.decisions.length - 1]
   const recentDecisions = result.decisions.slice(-5)
+  const confidence = Math.round(latestDecision.confidence * 100)
+  const riskScore = Math.round(latestDecision.riskScore)
+  const terminalLines = [
+    ['00:00.000', 'boot', 'GuardRail Strategy Skill v1 initialized'],
+    ['00:00.018', 'source', `${source.provider} / ${source.mode} / ${source.candles} candles loaded`],
+    ['00:00.041', 'regime', `${result.currentSignal.regime} detected from trend, volume, and volatility features`],
+    ['00:00.067', 'router', `${result.currentSignal.strategy} selected by strategy router`],
+    ['00:00.093', 'risk', `confidence=${confidence}% riskScore=${riskScore}/100 approved=${String(latestDecision.approved)}`],
+    ['00:00.121', latestDecision.action, actionNarrative(result)],
+  ]
 
   return (
     <section className="terminal-layout">
@@ -267,30 +299,42 @@ function TerminalPanel({
           <span></span>
           <span></span>
           <strong>guardrail-agent</strong>
+          <div className="terminal-live">
+            <Zap size={13} />
+            replay
+          </div>
         </div>
         <div className="terminal-body">
-          <p>
+          <p className="terminal-command">
             <span className="prompt">$</span> guardrail run --symbol {symbol} --risk {riskMode} --source cmc
+            <span className="cursor"></span>
           </p>
-          <p>
-            <span className="log-key">data</span> provider={source.provider} mode={source.mode} candles={source.candles}
-          </p>
-          <p>
-            <span className="log-key">regime</span> {result.currentSignal.regime}
-          </p>
-          <p>
-            <span className="log-key">router</span> selected="{result.currentSignal.strategy}"
-          </p>
-          <p>
-            <span className="log-key">risk</span> score={latestDecision.riskScore.toFixed(0)} confidence=
-            {(latestDecision.confidence * 100).toFixed(0)} approved={String(latestDecision.approved)}
-          </p>
-          <p>
-            <span className={`terminal-action ${latestDecision.action}`}>{latestDecision.action}</span> {latestDecision.reason}
-          </p>
+          {terminalLines.map(([time, key, value], index) => (
+            <p className="terminal-line" style={{ animationDelay: `${index * 90}ms` }} key={`${time}-${key}`}>
+              <span className="timestamp">{time}</span>
+              <span className={`log-key ${key}`}>{key}</span>
+              <span>{value}</span>
+            </p>
+          ))}
+          <div className="terminal-meters">
+            <article>
+              <span>Confidence</span>
+              <strong>{confidence}%</strong>
+              <div className="meter">
+                <i style={{ width: `${confidence}%` }}></i>
+              </div>
+            </article>
+            <article>
+              <span>Risk Score</span>
+              <strong>{riskScore}/100</strong>
+              <div className="meter risk">
+                <i style={{ width: `${riskScore}%` }}></i>
+              </div>
+            </article>
+          </div>
           <div className="terminal-separator"></div>
           {recentDecisions.map((decision) => (
-            <p key={`${decision.time}-${decision.riskScore}`}>
+            <p className="terminal-history" key={`${decision.time}-${decision.riskScore}`}>
               <span className="muted">{decision.time}</span> {decision.regime} / {decision.strategy} /{' '}
               <span className={`inline-action ${decision.action}`}>{decision.action}</span>
             </p>
@@ -300,7 +344,7 @@ function TerminalPanel({
 
       <aside className="operator-panel">
         <div className="panel-title">
-          <ShieldCheck size={18} />
+          <Cpu size={18} />
           <h2>Operator snapshot</h2>
         </div>
         <div className="operator-grid">
@@ -397,6 +441,7 @@ function SkillPanel({ symbol, result, source }: { symbol: SymbolId; result: Back
 }
 
 function FaqPanel() {
+  const [openIndex, setOpenIndex] = useState(0)
   const items = [
     ['Is this Track 1 or Track 2?', 'Track 2. It is a backtestable Strategy Skill and does not execute live trades or require on-chain registration.'],
     ['Does it guarantee profit?', 'No. The claim is risk-aware strategy generation, benchmark visibility, and explainable trade refusal.'],
@@ -406,11 +451,16 @@ function FaqPanel() {
   ]
 
   return (
-    <section className="faq-grid">
-      {items.map(([q, a]) => (
-        <article className="panel faq-item" key={q}>
-          <h2>{q}</h2>
-          <p>{a}</p>
+    <section className="faq-stack">
+      {items.map(([q, a], index) => (
+        <article className={`faq-item ${openIndex === index ? 'open' : ''}`} key={q}>
+          <button type="button" onClick={() => setOpenIndex(openIndex === index ? -1 : index)}>
+            <span>{q}</span>
+            <ChevronDown size={18} />
+          </button>
+          <div className="faq-answer">
+            <p>{a}</p>
+          </div>
         </article>
       ))}
     </section>
