@@ -4,6 +4,13 @@ Track 2 prototype for BNB Hack: AI Trading Agent Edition.
 
 GuardRail is a backtestable AI trading strategy skill. It reads OHLCV-style market data, classifies the market regime, routes to a strategy, and lets a risk governor approve or block actions before they enter the backtest.
 
+## Links
+
+- DoraHacks submission: https://dorahacks.io/buidl/44176
+- Live demo: https://bnb-hacka.vercel.app
+- Demo video: https://youtu.be/7MSR7xkbWg8
+- GitHub repository: https://github.com/eCoxvague/guardrail-strategy-skill
+
 ## What it demonstrates
 
 - Market regime detection: trend, range, volatility, liquidity, and risk-off states.

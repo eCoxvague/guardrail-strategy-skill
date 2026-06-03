@@ -54,15 +54,19 @@ Reasons it stands out:
 
 ## Repository
 
-Add public GitHub repository URL here after pushing.
+https://github.com/eCoxvague/guardrail-strategy-skill
 
 ## Demo
 
-Add deployed demo URL here after deploying.
+https://bnb-hacka.vercel.app
 
 ## Video
 
-Add demo video URL here after recording.
+https://youtu.be/7MSR7xkbWg8
+
+## DoraHacks Submission
+
+https://dorahacks.io/buidl/44176
 
 Suggested 2-minute video flow:
 
