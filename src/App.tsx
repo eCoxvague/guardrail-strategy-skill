@@ -1,13 +1,20 @@
 import {
   Activity,
+  BarChart3,
   Brain,
+  CheckCircle2,
   CircleDollarSign,
+  ClipboardCheck,
   Database,
+  FileText,
   Gauge,
+  HelpCircle,
   LineChart,
   RefreshCw,
+  Rocket,
   ShieldCheck,
   Swords,
+  Terminal,
   TrendingUp,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
@@ -15,10 +22,19 @@ import './App.css'
 import { riskConfigs } from './domain/agent'
 import { runBacktest } from './domain/backtest'
 import { getMarketData, getMarketDataSource } from './domain/marketData'
-import type { EquityPoint, RiskMode, SymbolId, Trade } from './domain/types'
+import type { BacktestResult, EquityPoint, MarketDataSource, RiskMode, SymbolId, Trade } from './domain/types'
 
 const symbols: SymbolId[] = ['BNB', 'CAKE', 'TWT']
 const riskModes: RiskMode[] = ['defensive', 'balanced', 'growth']
+type AppTab = 'terminal' | 'backtest' | 'skill' | 'faq' | 'submission'
+
+const tabs: Array<{ id: AppTab; label: string; Icon: typeof Terminal }> = [
+  { id: 'terminal', label: 'Terminal', Icon: Terminal },
+  { id: 'backtest', label: 'Backtest', Icon: BarChart3 },
+  { id: 'skill', label: 'Skill Spec', Icon: FileText },
+  { id: 'faq', label: 'FAQ', Icon: HelpCircle },
+  { id: 'submission', label: 'Submit', Icon: Rocket },
+]
 
 const modeLabels: Record<RiskMode, string> = {
   defensive: 'Defensive',
@@ -37,6 +53,13 @@ function formatCurrency(value: number, maximumFractionDigits = 0) {
 function formatPct(value: number) {
   const prefix = value > 0 ? '+' : ''
   return `${prefix}${value.toFixed(2)}%`
+}
+
+function titleCaseMode(mode: string) {
+  return mode
+    .split('-')
+    .map((part) => part[0].toUpperCase() + part.slice(1))
+    .join(' ')
 }
 
 function MetricCard({
@@ -79,6 +102,9 @@ function EquityChart({ points }: { points: EquityPoint[] }) {
   const height = 300
   const equityPath = buildPath(points, 'equity', width, height)
   const pricePath = buildPath(points, 'price', width, height)
+  const equityMin = Math.min(...points.map((point) => point.equity))
+  const equityMax = Math.max(...points.map((point) => point.equity))
+  const equityRange = equityMax - equityMin || 1
   const signalPoints = points
     .map((point, index) => ({ point, index }))
     .filter(({ point }) => point.action === 'buy' || point.action === 'sell')
@@ -105,8 +131,7 @@ function EquityChart({ points }: { points: EquityPoint[] }) {
         <path className="equity-path" d={equityPath} />
         {signalPoints.map(({ point, index }) => {
           const x = (index / Math.max(points.length - 1, 1)) * width
-          const y = height - ((point.equity - Math.min(...points.map((p) => p.equity))) /
-            (Math.max(...points.map((p) => p.equity)) - Math.min(...points.map((p) => p.equity)) || 1)) * height
+          const y = height - ((point.equity - equityMin) / equityRange) * height
           return <circle key={`${point.time}-${point.action}`} className={`signal-dot ${point.action}`} cx={x} cy={y} r="5" />
         })}
       </svg>
@@ -151,24 +176,7 @@ function TradesTable({ trades }: { trades: Trade[] }) {
   )
 }
 
-function DataSourcePanel({
-  provider,
-  mode,
-  fetchedAt,
-  candles,
-  note,
-}: {
-  provider: string
-  mode: string
-  fetchedAt?: string
-  candles: number
-  note: string
-}) {
-  const modeLabel = mode
-    .split('-')
-    .map((part) => part[0].toUpperCase() + part.slice(1))
-    .join(' ')
-
+function DataSourcePanel({ source }: { source: MarketDataSource }) {
   return (
     <section className="data-source-panel">
       <div className="panel-title">
@@ -178,42 +186,30 @@ function DataSourcePanel({
       <div className="source-grid">
         <article>
           <span>Provider</span>
-          <strong>{provider}</strong>
+          <strong>{source.provider}</strong>
         </article>
         <article>
           <span>Mode</span>
-          <strong>{modeLabel}</strong>
+          <strong>{titleCaseMode(source.mode)}</strong>
         </article>
         <article>
           <span>Candles</span>
-          <strong>{candles}</strong>
+          <strong>{source.candles}</strong>
         </article>
         <article>
           <span>Fetched</span>
-          <strong>{fetchedAt ? new Date(fetchedAt).toLocaleDateString('en-US') : 'Local demo'}</strong>
+          <strong>{source.fetchedAt ? new Date(source.fetchedAt).toLocaleDateString('en-US') : 'Local demo'}</strong>
         </article>
       </div>
-      <p>{note}</p>
+      <p>{source.note}</p>
       <small>API key is used only by the local cache script and is never shipped to the browser.</small>
     </section>
   )
 }
 
-function BenchmarkPanel({
-  guardReturn,
-  guardDrawdown,
-  benchmarkReturn,
-  benchmarkDrawdown,
-  benchmarkName,
-}: {
-  guardReturn: number
-  guardDrawdown: number
-  benchmarkReturn: number
-  benchmarkDrawdown: number
-  benchmarkName: string
-}) {
-  const returnDelta = guardReturn - benchmarkReturn
-  const drawdownDelta = benchmarkDrawdown - guardDrawdown
+function BenchmarkPanel({ result }: { result: BacktestResult }) {
+  const returnDelta = result.stats.totalReturnPct - result.benchmark.totalReturnPct
+  const drawdownDelta = result.benchmark.maxDrawdownPct - result.stats.maxDrawdownPct
 
   return (
     <section className="panel benchmark-panel">
@@ -224,12 +220,14 @@ function BenchmarkPanel({
       <div className="benchmark-grid">
         <article>
           <span>GuardRail return</span>
-          <strong className={guardReturn >= 0 ? 'positive' : 'negative'}>{formatPct(guardReturn)}</strong>
+          <strong className={result.stats.totalReturnPct >= 0 ? 'positive' : 'negative'}>{formatPct(result.stats.totalReturnPct)}</strong>
           <small>Risk-routed strategy</small>
         </article>
         <article>
-          <span>{benchmarkName}</span>
-          <strong className={benchmarkReturn >= 0 ? 'positive' : 'negative'}>{formatPct(benchmarkReturn)}</strong>
+          <span>{result.benchmark.name}</span>
+          <strong className={result.benchmark.totalReturnPct >= 0 ? 'positive' : 'negative'}>
+            {formatPct(result.benchmark.totalReturnPct)}
+          </strong>
           <small>Baseline indicator strategy</small>
         </article>
         <article>
@@ -247,53 +245,220 @@ function BenchmarkPanel({
   )
 }
 
-function App() {
-  const [symbol, setSymbol] = useState<SymbolId>('BNB')
-  const [riskMode, setRiskMode] = useState<RiskMode>('balanced')
-  const candles = useMemo(() => getMarketData(symbol), [symbol])
-  const dataSource = useMemo(() => getMarketDataSource(symbol), [symbol])
-  const result = useMemo(() => runBacktest(symbol, candles, riskMode), [symbol, candles, riskMode])
+function TerminalPanel({
+  symbol,
+  riskMode,
+  result,
+  source,
+}: {
+  symbol: SymbolId
+  riskMode: RiskMode
+  result: BacktestResult
+  source: MarketDataSource
+}) {
   const latestDecision = result.decisions[result.decisions.length - 1]
-  const latestEquity = result.equityCurve[result.equityCurve.length - 1]?.equity ?? 10000
-  const risk = riskConfigs[riskMode]
+  const recentDecisions = result.decisions.slice(-5)
 
   return (
-    <main className="app-shell">
-      <header className="topbar">
-        <div>
-          <p className="eyebrow">BNB Hack: AI Trading Agent Edition - Track 2</p>
-          <h1>GuardRail Strategy Skill</h1>
+    <section className="terminal-layout">
+      <div className="terminal-window">
+        <div className="terminal-bar">
+          <span></span>
+          <span></span>
+          <span></span>
+          <strong>guardrail-agent</strong>
         </div>
-        <div className="status-pill">
+        <div className="terminal-body">
+          <p>
+            <span className="prompt">$</span> guardrail run --symbol {symbol} --risk {riskMode} --source cmc
+          </p>
+          <p>
+            <span className="log-key">data</span> provider={source.provider} mode={source.mode} candles={source.candles}
+          </p>
+          <p>
+            <span className="log-key">regime</span> {result.currentSignal.regime}
+          </p>
+          <p>
+            <span className="log-key">router</span> selected="{result.currentSignal.strategy}"
+          </p>
+          <p>
+            <span className="log-key">risk</span> score={latestDecision.riskScore.toFixed(0)} confidence=
+            {(latestDecision.confidence * 100).toFixed(0)} approved={String(latestDecision.approved)}
+          </p>
+          <p>
+            <span className={`terminal-action ${latestDecision.action}`}>{latestDecision.action}</span> {latestDecision.reason}
+          </p>
+          <div className="terminal-separator"></div>
+          {recentDecisions.map((decision) => (
+            <p key={`${decision.time}-${decision.riskScore}`}>
+              <span className="muted">{decision.time}</span> {decision.regime} / {decision.strategy} /{' '}
+              <span className={`inline-action ${decision.action}`}>{decision.action}</span>
+            </p>
+          ))}
+        </div>
+      </div>
+
+      <aside className="operator-panel">
+        <div className="panel-title">
           <ShieldCheck size={18} />
-          Backtest only
+          <h2>Operator snapshot</h2>
         </div>
-      </header>
+        <div className="operator-grid">
+          <article>
+            <span>Signal</span>
+            <strong>{latestDecision.action.toUpperCase()}</strong>
+          </article>
+          <article>
+            <span>Return</span>
+            <strong className={result.stats.totalReturnPct >= 0 ? 'positive' : 'negative'}>{formatPct(result.stats.totalReturnPct)}</strong>
+          </article>
+          <article>
+            <span>Drawdown</span>
+            <strong>{result.stats.maxDrawdownPct.toFixed(2)}%</strong>
+          </article>
+          <article>
+            <span>Risk blocks</span>
+            <strong>{result.stats.riskBlocks}</strong>
+          </article>
+        </div>
+        <p>{source.note}</p>
+      </aside>
+    </section>
+  )
+}
 
-      <section className="control-strip" aria-label="Strategy controls">
-        <div className="segmented">
-          {symbols.map((item) => (
-            <button key={item} type="button" className={symbol === item ? 'active' : ''} onClick={() => setSymbol(item)}>
-              <Activity size={16} />
-              {item}
-            </button>
+function SkillPanel({ symbol, result, source }: { symbol: SymbolId; result: BacktestResult; source: MarketDataSource }) {
+  const skillOutput = {
+    skill: 'guardrail.strategy.v1',
+    symbol,
+    data: {
+      provider: source.provider,
+      mode: source.mode,
+      candles: source.candles,
+    },
+    decision: {
+      regime: result.currentSignal.regime,
+      strategy: result.currentSignal.strategy,
+      action: result.currentSignal.action,
+      confidence: Number(result.currentSignal.confidence.toFixed(2)),
+      positionPct: Number(result.currentSignal.positionPct.toFixed(2)),
+      stopLossPct: result.currentSignal.stopLossPct,
+      takeProfitPct: result.currentSignal.takeProfitPct,
+    },
+    risk: {
+      maxDrawdownObservedPct: result.stats.maxDrawdownPct,
+      riskOverrides: result.stats.riskBlocks,
+    },
+  }
+
+  return (
+    <section className="split-page">
+      <div className="panel spec-panel">
+        <div className="panel-title">
+          <Brain size={18} />
+          <h2>Skill architecture</h2>
+        </div>
+        <div className="flow-list">
+          {[
+            ['01', 'Normalize CMC market data', 'OHLCV, volume, and market cap are converted into a stable candle model.'],
+            ['02', 'Classify market regime', 'Trend, range, volatility, liquidity, and risk-off states drive the strategy choice.'],
+            ['03', 'Route strategy', 'Momentum, mean reversion, volatility breakout, or capital preservation.'],
+            ['04', 'Apply risk governor', 'Drawdown, confidence, position size, stop loss, take profit, and cooldown controls can block trades.'],
+          ].map(([step, title, body]) => (
+            <article key={step}>
+              <span>{step}</span>
+              <div>
+                <strong>{title}</strong>
+                <p>{body}</p>
+              </div>
+            </article>
           ))}
         </div>
-        <div className="segmented">
-          {riskModes.map((item) => (
-            <button
-              key={item}
-              type="button"
-              className={riskMode === item ? 'active' : ''}
-              onClick={() => setRiskMode(item)}
-            >
-              <Gauge size={16} />
-              {modeLabels[item]}
-            </button>
-          ))}
+      </div>
+      <section className="panel callout">
+        <div className="panel-title">
+          <TrendingUp size={18} />
+          <h2>CMC skill output</h2>
         </div>
+        <code>{JSON.stringify(skillOutput, null, 2)}</code>
       </section>
+    </section>
+  )
+}
 
+function FaqPanel() {
+  const items = [
+    ['Is this Track 1 or Track 2?', 'Track 2. It is a backtestable Strategy Skill and does not execute live trades or require on-chain registration.'],
+    ['Does it guarantee profit?', 'No. The claim is risk-aware strategy generation, benchmark visibility, and explainable trade refusal.'],
+    ['Where is CoinMarketCap used?', 'The cache script uses CMC market data. The UI displays active CMC data mode, candle count, and fetch metadata.'],
+    ['Why not only RSI or MACD?', 'GuardRail routes strategies by market regime and can block signals with a risk governor. The site compares it against naive RSI.'],
+    ['What happens with a better CMC plan?', 'The same script uses historical OHLCV when the endpoint is available. No UI or strategy rewrite is needed.'],
+  ]
+
+  return (
+    <section className="faq-grid">
+      {items.map(([q, a]) => (
+        <article className="panel faq-item" key={q}>
+          <h2>{q}</h2>
+          <p>{a}</p>
+        </article>
+      ))}
+    </section>
+  )
+}
+
+function SubmissionPanel() {
+  return (
+    <section className="split-page">
+      <div className="panel submission-card">
+        <div className="panel-title">
+          <ClipboardCheck size={18} />
+          <h2>DoraHacks package</h2>
+        </div>
+        <ul className="check-list">
+          {[
+            'Public GitHub repository ready',
+            'Production demo deployed',
+            'Track 2 strategy spec included',
+            'CMC data source visible in the UI',
+            'Benchmark against naive RSI included',
+          ].map((item) => (
+            <li key={item}>
+              <CheckCircle2 size={17} />
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="panel link-card">
+        <h2>Submission links</h2>
+        <a href="https://github.com/eCoxvague/guardrail-strategy-skill" target="_blank">
+          GitHub repository
+        </a>
+        <a href="https://bnb-hacka.vercel.app" target="_blank">
+          Live demo
+        </a>
+        <p>Remaining item: record a short demo video and add the link to DoraHacks.</p>
+      </div>
+    </section>
+  )
+}
+
+function BacktestPanel({
+  result,
+  latestEquity,
+  risk,
+  riskMode,
+}: {
+  result: BacktestResult
+  latestEquity: number
+  risk: (typeof riskConfigs)[RiskMode]
+  riskMode: RiskMode
+}) {
+  const latestDecision = result.decisions[result.decisions.length - 1]
+
+  return (
+    <>
       <section className="agent-summary">
         <div className="agent-copy">
           <div className="panel-title">
@@ -320,14 +485,6 @@ function App() {
         </div>
       </section>
 
-      <DataSourcePanel
-        provider={dataSource.provider}
-        mode={dataSource.mode}
-        fetchedAt={dataSource.fetchedAt}
-        candles={dataSource.candles}
-        note={dataSource.note}
-      />
-
       <section className="metrics-grid">
         <MetricCard
           label="Total return"
@@ -349,16 +506,9 @@ function App() {
       <section className="main-grid">
         <div className="left-column">
           <EquityChart points={result.equityCurve} />
-          <BenchmarkPanel
-            guardReturn={result.stats.totalReturnPct}
-            guardDrawdown={result.stats.maxDrawdownPct}
-            benchmarkReturn={result.benchmark.totalReturnPct}
-            benchmarkDrawdown={result.benchmark.maxDrawdownPct}
-            benchmarkName={result.benchmark.name}
-          />
+          <BenchmarkPanel result={result} />
           <TradesTable trades={result.trades} />
         </div>
-
         <aside className="right-column">
           <section className="panel">
             <div className="panel-title">
@@ -371,7 +521,6 @@ function App() {
               ))}
             </ul>
           </section>
-
           <section className="panel">
             <div className="panel-title">
               <RefreshCw size={18} />
@@ -392,32 +541,76 @@ function App() {
                 ))}
             </div>
           </section>
-
-          <section className="panel callout">
-            <div className="panel-title">
-              <TrendingUp size={18} />
-              <h2>CMC skill output</h2>
-            </div>
-            <code>
-              {JSON.stringify(
-                {
-                  symbol,
-                  regime: result.currentSignal.regime,
-                  strategy: result.currentSignal.strategy,
-                  action: result.currentSignal.action,
-                  confidence: Number(result.currentSignal.confidence.toFixed(2)),
-                  stopLossPct: result.currentSignal.stopLossPct,
-                  takeProfitPct: result.currentSignal.takeProfitPct,
-                  dataProvider: dataSource.provider,
-                  dataMode: dataSource.mode,
-                },
-                null,
-                2,
-              )}
-            </code>
-          </section>
         </aside>
       </section>
+    </>
+  )
+}
+
+function App() {
+  const [symbol, setSymbol] = useState<SymbolId>('BNB')
+  const [riskMode, setRiskMode] = useState<RiskMode>('balanced')
+  const [activeTab, setActiveTab] = useState<AppTab>('terminal')
+  const candles = useMemo(() => getMarketData(symbol), [symbol])
+  const dataSource = useMemo(() => getMarketDataSource(symbol), [symbol])
+  const result = useMemo(() => runBacktest(symbol, candles, riskMode), [symbol, candles, riskMode])
+  const latestEquity = result.equityCurve[result.equityCurve.length - 1]?.equity ?? 10000
+  const risk = riskConfigs[riskMode]
+
+  return (
+    <main className="app-shell">
+      <header className="workspace-header">
+        <div>
+          <p className="eyebrow">BNB Hack: AI Trading Agent Edition - Track 2</p>
+          <h1>GuardRail Strategy Skill</h1>
+          <p className="header-copy">Terminal-first demo for a CMC-backed, risk-aware trading strategy skill.</p>
+        </div>
+        <div className="status-pill">
+          <ShieldCheck size={18} />
+          Backtest only
+        </div>
+      </header>
+
+      <section className="command-deck">
+        <div className="tab-row" role="tablist" aria-label="Demo sections">
+          {tabs.map(({ id, label, Icon }) => (
+            <button key={id} type="button" className={activeTab === id ? 'active' : ''} onClick={() => setActiveTab(id)}>
+              <Icon size={16} />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div className="control-strip" aria-label="Strategy controls">
+          <div className="segmented">
+            {symbols.map((item) => (
+              <button key={item} type="button" className={symbol === item ? 'active' : ''} onClick={() => setSymbol(item)}>
+                <Activity size={16} />
+                {item}
+              </button>
+            ))}
+          </div>
+          <div className="segmented">
+            {riskModes.map((item) => (
+              <button key={item} type="button" className={riskMode === item ? 'active' : ''} onClick={() => setRiskMode(item)}>
+                <Gauge size={16} />
+                {modeLabels[item]}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {activeTab === 'terminal' && (
+        <>
+          <TerminalPanel symbol={symbol} riskMode={riskMode} result={result} source={dataSource} />
+          <DataSourcePanel source={dataSource} />
+        </>
+      )}
+      {activeTab === 'backtest' && <BacktestPanel result={result} latestEquity={latestEquity} risk={risk} riskMode={riskMode} />}
+      {activeTab === 'skill' && <SkillPanel symbol={symbol} result={result} source={dataSource} />}
+      {activeTab === 'faq' && <FaqPanel />}
+      {activeTab === 'submission' && <SubmissionPanel />}
     </main>
   )
 }
