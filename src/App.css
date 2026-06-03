@@ -268,6 +268,32 @@
   font-size: 14px;
 }
 
+.demo-guide {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid #263143;
+  border-radius: 8px;
+  background: #0d1420;
+}
+
+.demo-guide strong {
+  display: block;
+  color: #f8fafc;
+  font-size: 14px;
+}
+
+.demo-guide ol {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding-left: 18px;
+}
+
+.demo-guide li {
+  color: #aab3c2;
+  font-size: 13px;
+}
+
 .operator-grid,
 .source-grid,
 .benchmark-grid,

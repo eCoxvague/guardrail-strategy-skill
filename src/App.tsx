@@ -322,6 +322,16 @@ function TerminalPanel({
           </article>
         </div>
         <p>{source.note}</p>
+        <div className="demo-guide">
+          <strong>Silent demo guide</strong>
+          <ol>
+            <li>Switch BNB, CAKE, and TWT to show strategy changes.</li>
+            <li>Switch risk modes to show the governor changing limits.</li>
+            <li>Open Backtest to compare GuardRail against naive RSI.</li>
+            <li>Open Skill Spec to inspect the CMC-style JSON output.</li>
+            <li>Open Submit to verify repo, demo, and Track 2 package status.</li>
+          </ol>
+        </div>
       </aside>
     </section>
   )
