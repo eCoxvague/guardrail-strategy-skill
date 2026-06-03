@@ -406,7 +406,7 @@ function SkillPanel({ symbol, result, source }: { symbol: SymbolId; result: Back
   }
 
   return (
-    <section className="split-page">
+    <section className="split-page content-frame">
       <div className="panel spec-panel">
         <div className="panel-title">
           <Brain size={18} />
@@ -451,25 +451,32 @@ function FaqPanel() {
   ]
 
   return (
-    <section className="faq-stack">
-      {items.map(([q, a], index) => (
-        <article className={`faq-item ${openIndex === index ? 'open' : ''}`} key={q}>
-          <button type="button" onClick={() => setOpenIndex(openIndex === index ? -1 : index)}>
-            <span>{q}</span>
-            <ChevronDown size={18} />
-          </button>
-          <div className="faq-answer">
-            <p>{a}</p>
-          </div>
-        </article>
-      ))}
+    <section className="content-frame faq-page">
+      <div className="section-intro">
+        <span>Reviewer notes</span>
+        <h2>FAQ</h2>
+        <p>Short answers for the judging panel, focused on track fit, CMC usage, and strategy claims.</p>
+      </div>
+      <div className="faq-stack">
+        {items.map(([q, a], index) => (
+          <article className={`faq-item ${openIndex === index ? 'open' : ''}`} key={q}>
+            <button type="button" onClick={() => setOpenIndex(openIndex === index ? -1 : index)}>
+              <span>{q}</span>
+              <ChevronDown size={18} />
+            </button>
+            <div className="faq-answer">
+              <p>{a}</p>
+            </div>
+          </article>
+        ))}
+      </div>
     </section>
   )
 }
 
 function SubmissionPanel() {
   return (
-    <section className="split-page">
+    <section className="split-page content-frame">
       <div className="panel submission-card">
         <div className="panel-title">
           <ClipboardCheck size={18} />
